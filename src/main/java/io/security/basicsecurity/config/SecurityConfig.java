@@ -8,10 +8,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
 @Configuration
@@ -26,7 +29,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         http
                 .formLogin()       //인증정책(formlogin을 통해서)
-                .loginPage("/loginPage")   //로그인 페이지 url
+                //.loginPage("/loginPage")   //로그인 페이지 url
                 .defaultSuccessUrl("/")   //로그인 성공시 이동할 url
                 .failureUrl("/loginPage")    //로그인 실패시 이동할 url
                 .usernameParameter("userId")     //username 파라미터명 변경
@@ -46,7 +49,26 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         response.sendRedirect("/login");
                     }
                 })
-                .permitAll()    //loginPage에 접근 하는 경우 접근을 제한하지 않음
-                ;
+                .permitAll();    //loginPage에 접근 하는 경우 접근을 제한하지 않음
+
+
+        http
+                .logout()
+                .logoutUrl("/logout")      //logout은 post 방식
+                .logoutSuccessUrl("/logout")
+                .addLogoutHandler(new LogoutHandler() {
+                    @Override
+                    public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
+                        HttpSession session = request.getSession();
+                        session.invalidate();
+                    }
+                })
+                .logoutSuccessHandler(new LogoutSuccessHandler() {
+                    @Override
+                    public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+                        response.sendRedirect("/login");
+                    }
+                })
+                .deleteCookies("remember-me");     //cookie 삭제
     }
 }
