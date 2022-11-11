@@ -1,11 +1,13 @@
 package io.security.basicsecurity.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
@@ -20,6 +22,9 @@ import java.io.IOException;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+    @Autowired
+    UserDetailsService userDetailsService;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -36,7 +41,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .passwordParameter("pw")       //password 파라미터명 변경
                 .loginProcessingUrl("/login_proc")     //로그인 form action url
                 .successHandler(new AuthenticationSuccessHandler() {  //익명 class 사용 (인증 성공시 handler 작동)
-                    @Override                                                                                    // 인증에 성공하면 인증의 결과를 담은 객체
+                    @Override
+                    // 인증에 성공하면 인증의 결과를 담은 객체
                     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
                         System.out.println("authentication" + authentication.getName());
                         response.sendRedirect("/");
@@ -69,6 +75,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         response.sendRedirect("/login");
                     }
                 })
-                .deleteCookies("remember-me");     //cookie 삭제
+//                .deleteCookies("remember-me");     //cookie 삭제
+                .and()
+                .rememberMe()
+                .rememberMeParameter("remember")
+                .tokenValiditySeconds(3600)
+                .userDetailsService(userDetailsService);
     }
 }
