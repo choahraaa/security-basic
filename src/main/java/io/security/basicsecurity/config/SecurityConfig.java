@@ -37,8 +37,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         http
                 .sessionManagement()
-                .maximumSessions(1)       //세션의 갯수 설정(-1  =  무한대)
-                .maxSessionsPreventsLogin(true);     // 세션의 갯수를 초과했을 경우, 현재 로그인을 차단  (false일때는 이전의 로그인을 차단)
+//                .sessionFixation().none();      //무방비상태
+                .sessionFixation().changeSessionId();      //sessionId를 변경하여 정보에 접근 차단
+//        http
+//                .sessionManagement()
+//                .maximumSessions(1)       //세션의 갯수 설정(-1  =  무한대)
+//                .maxSessionsPreventsLogin(true);     // 세션의 갯수를 초과했을 경우, 현재 로그인을 차단  (false일때는 이전의 로그인을 차단)
 
 //                .loginPage("/loginPage")   //로그인 페이지 url
 //                .defaultSuccessUrl("/")   //로그인 성공시 이동할 url
