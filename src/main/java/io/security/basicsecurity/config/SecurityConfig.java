@@ -2,6 +2,7 @@ package io.security.basicsecurity.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -23,22 +24,33 @@ import java.io.IOException;
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-//    @Autowired
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.inMemoryAuthentication().withUser("user").password("{noop}1111").roles("USER");
+        auth.inMemoryAuthentication().withUser("sys").password("{noop}1111").roles("SYS");
+//        auth.inMemoryAuthentication().withUser("admin").password("{noop}1111").roles("ADMIN");    //각기 다른 권한의 계정 생성
+        auth.inMemoryAuthentication().withUser("admin").password("{noop}1111").roles("ADMIN", "SYS", "USER");    //admin 계정이 다른 권한에 해당하는 자원의 접근을 가능하게 함
+    }
+
+    //    @Autowired
 //    UserDetailsService userDetailsService;
 //
 //    @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .authorizeRequests()
+                .antMatchers("/user").hasRole("USER")     //특정 요청에 대해서 인가정책을 매치 (권한 심사)
+                .antMatchers("/admin/pay").hasRole("ADMIN")
+                .antMatchers("/admin/**").access("hasRole('ADMIN') or hasRole('SYS')")      // 권한 설정에 순서도 중요(전체 권한 먼저 설정후 부분 권한 설정을 하면 안됨)
                 .anyRequest().authenticated();   //요청에 대한 보안검색 시작(모든 요청에 대해서 인증을 받도록 설정 - 인가정책)
 
         http
                 .formLogin();       //인증정책(formlogin을 통해서)
 
-        http
-                .sessionManagement()
+//        http
+//                .sessionManagement()
 //                .sessionFixation().none();      //무방비상태
-                .sessionFixation().changeSessionId();      //sessionId를 변경하여 정보에 접근 차단
+//                .sessionFixation().changeSessionId();      //sessionId를 변경하여 정보에 접근 차단
 //        http
 //                .sessionManagement()
 //                .maximumSessions(1)       //세션의 갯수 설정(-1  =  무한대)
