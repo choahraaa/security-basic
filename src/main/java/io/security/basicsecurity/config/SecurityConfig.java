@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.access.AccessDeniedHandler;
@@ -29,32 +30,40 @@ import java.io.IOException;
 
 @Configuration
 @EnableWebSecurity
-@Order(0)     //설정클래스 초기화하는 순서 (요청 순서 : 순서에 따라서 자원 접근 허용이 달라짐 / 넓은 범위의 요청 순서가 우선순위가 낮아야함)
+//@Order(0)     //설정클래스 초기화하는 순서 (요청 순서 : 순서에 따라서 자원 접근 허용이 달라짐 / 넓은 범위의 요청 순서가 우선순위가 낮아야함)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {  //첫번쪠 시큐리티 설정 클래스
 
     protected void configure(HttpSecurity http) throws Exception {
-        http
-                .antMatcher("/admin/**")   //특정 url 설정
-                .authorizeRequests()
-                .anyRequest().authenticated()     //모든 사용자가 인증을 받아야만 자원에 접근가능 (authenticated)
-                .and()
-                .httpBasic();   //인증방식 - 방식에 따라서 필터의 구성이 다름
+          http
+                  .authorizeRequests()
+                  .anyRequest().authenticated();
+          http
+                  .formLogin()
+                  ;
+
+          SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);     //스프링시큐리티가 초기화할때 이 전략으로 모드를 변경(자식 쓰레드에서 부모 쓰레드에 저장된 인증객체를 사용하기 위한 모드 설정)
+//        http
+//                .antMatcher("/admin/**")   //특정 url 설정
+//                .authorizeRequests()
+//                .anyRequest().authenticated()     //모든 사용자가 인증을 받아야만 자원에 접근가능 (authenticated)
+//                .and()
+//                .httpBasic();   //인증방식 - 방식에 따라서 필터의 구성이 다름
     }
 }//인증방식
 
-@Configuration
-@Order(1)
-class SecurityConfig2 extends WebSecurityConfigurerAdapter {  //두번쩨 시큐리티 설정 클래스
-
-    protected void configure(HttpSecurity http) throws Exception {
-        http
-                .authorizeRequests()
-                .anyRequest().permitAll()    //인증을 받지 않아도 접근 가능 (permitAll)
-                .and()
-                .formLogin();    //인증방식
-    }
-
-}
+//@Configuration
+//@Order(1)
+//class SecurityConfig2 extends WebSecurityConfigurerAdapter {  //두번쩨 시큐리티 설정 클래스
+//
+//    protected void configure(HttpSecurity http) throws Exception {
+//        http
+//                .authorizeRequests()
+//                .anyRequest().permitAll()    //인증을 받지 않아도 접근 가능 (permitAll)
+//                .and()
+//                .formLogin();    //인증방식
+//    }
+//
+//}
 
 //    @Override
 //    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
